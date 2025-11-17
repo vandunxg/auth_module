@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.AccessDeniedException;
 
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,14 +31,14 @@ public class AuthController {
     AuthService authService;
 
     @PostMapping("/register")
-    ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest) {
+    ResponseEntity<?> register(@RequestBody @Valid RegisterRequest registerRequest) {
         log.info("[POST] /auth/register]={}", registerRequest);
 
         return ResponseUtil.created(authService.register(registerRequest));
     }
 
     @PostMapping("/login")
-    ResponseEntity<?> login(@RequestBody LoginRequest request) throws AccessDeniedException {
+    ResponseEntity<?> login(@RequestBody @Valid LoginRequest request) throws AccessDeniedException {
         log.info("[POST] /auth/login]={}", request);
 
         return ResponseUtil.success(MessageConstant.LOGIN_SUCCESS, authService.login(request));

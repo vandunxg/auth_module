@@ -7,9 +7,11 @@ import java.util.Map;
 
 import jakarta.validation.ConstraintViolationException;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.auth.common.response.ErrorResponse;
@@ -27,6 +29,7 @@ public class GlobalExceptionHandler {
         return ResponseUtil.error(ex.getErrorCode(), ex.getMessage());
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex) {
@@ -43,6 +46,7 @@ public class GlobalExceptionHandler {
                 ErrorCode.VALIDATION_ERROR, ErrorCode.VALIDATION_ERROR.getMessage(), errors);
     }
 
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ErrorResponse> handleConstraintViolation(
             ConstraintViolationException ex) {
@@ -58,6 +62,7 @@ public class GlobalExceptionHandler {
                 ErrorCode.VALIDATION_ERROR, ErrorCode.VALIDATION_ERROR.getMessage(), violations);
     }
 
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         log.error("[handleGenericException]", ex);

@@ -1,5 +1,7 @@
 package com.auth.users.services.impl;
 
+import com.auth.users.event.UserLogonEvent;
+import com.auth.users.repository.entity.User;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -7,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -33,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
     UserService userService;
     JwtService jwtService;
     AuthenticationManager authenticationManager;
+    ApplicationEventPublisher eventPublisher;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -57,8 +61,11 @@ public class AuthServiceImpl implements AuthService {
 
             UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
 
-            return jwtService.issueToken(principal);
+            User user = principal.getUser();
 
+            eventPublisher.publishEvent(new UserLogonEvent(user.getId()));
+
+            return jwtService.issueToken(principal);
         } catch (AuthenticationException ex) {
             log.warn("[login] Failed email={}, reason={}", request.email(), ex.getMessage());
 

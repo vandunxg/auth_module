@@ -57,8 +57,8 @@ public final class ResponseUtil {
                         .status(code.getHttpStatus().value())
                         .error(code.getHttpStatus().getReasonPhrase())
                         .message(message != null ? message : code.getMessage())
-                        .path(getPath())
                         .errors(errors)
+                        .path(getPath())
                         .build();
         return ResponseEntity.status(code.getHttpStatus()).body(body);
     }

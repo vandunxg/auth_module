@@ -29,7 +29,7 @@ public class UserSession extends BaseEntity {
     UUID userId;
 
     @Column(nullable = false)
-    UUID refreshTokenId;
+    String refreshTokenHash;
 
     String deviceId;
 
