@@ -1,6 +1,5 @@
 package com.auth.common.configs;
 
-import com.auth.users.configs.CustomizeRequestFilter;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +17,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.auth.users.configs.CustomizeRequestFilter;
 
 @Configuration
 @RequiredArgsConstructor

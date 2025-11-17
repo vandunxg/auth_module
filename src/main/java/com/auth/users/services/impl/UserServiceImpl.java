@@ -11,6 +11,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.auth.common.error.UserValidationException;
 import com.auth.common.utils.ErrorCode;
 import com.auth.users.apis.request.RegisterRequest;
 import com.auth.users.event.UserCreatedEvent;
@@ -18,7 +19,6 @@ import com.auth.users.factory.UserFactory;
 import com.auth.users.repository.UserRepository;
 import com.auth.users.repository.entity.User;
 import com.auth.users.services.UserService;
-import com.auth.users.services.exception.UserValidationException;
 
 @Service
 @RequiredArgsConstructor
