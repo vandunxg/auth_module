@@ -1,0 +1,53 @@
+spring:
+  profiles:
+    active: dev
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/auth_demo
+    username: root
+    password: 122112
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+  application:
+    version: 1.0
+    verification:
+      expiry-minutes: 15
+  sendgrid:
+    api-key: YUMMY_TOKEN
+    register-template: YUMMY_TOKEN
+  mail:
+    from: YUMMY_EMAIL
+
+jwt:
+  private-key:
+    access-token: YUMMY_TOKEN
+    refresh-token: YUMMY_TOKEN
+  expiration:
+    access-token: 2592000000 # 1 hour = 1 * 60 * 60 * 1000 = 3600000
+    refresh-token: 2592000000 #30 days = 30 * 24 * 60 * 60 * 1000
+logging:
+  level:
+    com.budgee: DEBUG
+    org.springframework: INFO
+budgee.executor:
+  mail:
+    core-size: 2
+    max-size: 4
+  group:
+    core-size: 4
+    max-size: 8
+

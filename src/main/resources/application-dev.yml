@@ -1,0 +1,39 @@
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/auth_demo
+    username: root
+    password: 122112
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+  application:
+    version: 1.0
+    verification:
+      expiry-minutes: 15
+  sendgrid:
+    api-key: YUMMY_TOKEN
+    register-template: YUMMY_TOKEN
+  mail:
+    from: YUMMY_EMAIL
+
+jwt:
+  private-key:
+    access-token: 8ff78aaa96744f0c57a407a962db77470f567981bfbddd127d473177bd1624b9
+    refresh-token: 27021f65050e839cee326c3fbad77a7097e24f646cc20e48dbe280c95fb9ccc7
+  expiration:
+    access-token: 2592000000 # 1 hour = 1 * 60 * 60 * 1000 = 3600000
+    refresh-token: 2592000000 #30 days = 30 * 24 * 60 * 60 * 1000
