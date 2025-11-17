@@ -1,10 +1,10 @@
-package com.auth.users.services;
+package com.auth.users.service;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.auth.common.enums.TokenType;
-import com.auth.users.apis.response.TokenResponse;
-import com.auth.users.configs.UserPrincipal;
+import com.auth.users.api.response.TokenResponse;
+import com.auth.users.config.UserPrincipal;
 
 public interface JwtService {
 

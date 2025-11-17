@@ -25,8 +25,10 @@ import com.auth.common.repository.BaseEntity;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class LoginHistory extends BaseEntity {
 
-    @Column(nullable = false)
     UUID userId;
+
+    @Column(nullable = false)
+    String email;
 
     String deviceId;
     String platform;

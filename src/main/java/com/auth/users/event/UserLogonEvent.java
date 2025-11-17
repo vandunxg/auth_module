@@ -2,5 +2,12 @@ package com.auth.users.event;
 
 import java.util.UUID;
 
-public record UserLogonEvent(UUID userId) {
-}
+import com.auth.common.enums.LoginStatus;
+
+public record UserLogonEvent(
+        UUID userId,
+        String email,
+        String platform,
+        String deviceId,
+        String ipAddress,
+        LoginStatus status) {}

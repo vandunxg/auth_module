@@ -22,6 +22,7 @@ spring:
       max-request-size: 2MB
   application:
     version: 1.0
+    hash-secret-key: 91b0e37127ca787552ffad881aad2cbd95faafae9dfd4ad37d8b477c4bff8ab3
     verification:
       expiry-minutes: 15
   sendgrid:

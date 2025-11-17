@@ -1,4 +1,4 @@
-package com.auth.users.configs;
+package com.auth.users.config;
 
 import static com.auth.common.enums.TokenType.ACCESS_TOKEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -29,8 +29,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.auth.common.response.ErrorResponse;
 import com.auth.common.utils.ErrorCode;
 import com.auth.common.utils.ResponseUtil;
-import com.auth.users.services.JwtService;
-import com.auth.users.services.impl.CustomUserDetailsService;
+import com.auth.users.service.JwtService;
+import com.auth.users.service.impl.CustomUserDetailsService;
 import com.google.gson.Gson;
 
 @Configuration

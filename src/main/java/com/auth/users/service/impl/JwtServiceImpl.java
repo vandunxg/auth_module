@@ -1,4 +1,4 @@
-package com.auth.users.services.impl;
+package com.auth.users.service.impl;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -20,10 +20,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.auth.common.enums.TokenType;
-import com.auth.users.apis.response.TokenResponse;
-import com.auth.users.configs.UserPrincipal;
+import com.auth.users.api.response.TokenResponse;
+import com.auth.users.config.UserPrincipal;
 import com.auth.users.repository.entity.User;
-import com.auth.users.services.JwtService;
+import com.auth.users.service.JwtService;
 
 @Service
 @RequiredArgsConstructor

@@ -1,4 +1,4 @@
-package com.auth.users.configs;
+package com.auth.users.config;
 
 import lombok.AccessLevel;
 import lombok.Getter;

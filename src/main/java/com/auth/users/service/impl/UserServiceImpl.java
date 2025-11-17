@@ -1,4 +1,4 @@
-package com.auth.users.services.impl;
+package com.auth.users.service.impl;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.auth.common.error.UserValidationException;
 import com.auth.common.utils.ErrorCode;
-import com.auth.users.apis.request.RegisterRequest;
+import com.auth.users.api.request.RegisterRequest;
 import com.auth.users.event.UserCreatedEvent;
 import com.auth.users.factory.UserFactory;
 import com.auth.users.repository.UserRepository;
 import com.auth.users.repository.entity.User;
-import com.auth.users.services.UserService;
+import com.auth.users.service.UserService;
 
 @Service
 @RequiredArgsConstructor

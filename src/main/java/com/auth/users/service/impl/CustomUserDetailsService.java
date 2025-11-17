@@ -1,4 +1,4 @@
-package com.auth.users.services.impl;
+package com.auth.users.service.impl;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.auth.users.configs.UserPrincipal;
+import com.auth.users.config.UserPrincipal;
 import com.auth.users.repository.UserRepository;
 import com.auth.users.repository.entity.User;
 

@@ -1,4 +1,4 @@
-package com.auth.users.apis.request;
+package com.auth.users.api.request;
 
 import jakarta.validation.constraints.*;
 

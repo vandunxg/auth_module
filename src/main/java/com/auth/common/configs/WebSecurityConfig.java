@@ -18,7 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.auth.users.configs.CustomizeRequestFilter;
+import com.auth.users.config.CustomizeRequestFilter;
 
 @Configuration
 @RequiredArgsConstructor

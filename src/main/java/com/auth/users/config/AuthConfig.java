@@ -1,4 +1,4 @@
-package com.auth.users.configs;
+package com.auth.users.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.auth.users.services.impl.CustomUserDetailsService;
+import com.auth.users.service.impl.CustomUserDetailsService;
 
 @Configuration
 public class AuthConfig {

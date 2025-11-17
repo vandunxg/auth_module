@@ -1,4 +1,4 @@
-package com.auth.users.apis;
+package com.auth.users.api;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.AccessDeniedException;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -17,9 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.auth.common.utils.MessageConstant;
 import com.auth.common.utils.ResponseUtil;
-import com.auth.users.apis.request.LoginRequest;
-import com.auth.users.apis.request.RegisterRequest;
-import com.auth.users.services.AuthService;
+import com.auth.users.api.request.LoginRequest;
+import com.auth.users.api.request.RegisterRequest;
+import com.auth.users.service.AuthService;
 
 @RestController
 @RequestMapping("/auth")
@@ -38,9 +39,12 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    ResponseEntity<?> login(@RequestBody @Valid LoginRequest request) throws AccessDeniedException {
+    ResponseEntity<?> login(
+            @RequestBody @Valid LoginRequest request, HttpServletRequest httpRequest)
+            throws AccessDeniedException {
         log.info("[POST] /auth/login]={}", request);
 
-        return ResponseUtil.success(MessageConstant.LOGIN_SUCCESS, authService.login(request));
+        return ResponseUtil.success(
+                MessageConstant.LOGIN_SUCCESS, authService.login(request, httpRequest));
     }
 }

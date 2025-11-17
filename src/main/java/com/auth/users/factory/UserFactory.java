@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.auth.common.enums.UserStatus;
-import com.auth.users.apis.request.RegisterRequest;
+import com.auth.users.api.request.RegisterRequest;
 import com.auth.users.repository.entity.User;
 
 @Component
