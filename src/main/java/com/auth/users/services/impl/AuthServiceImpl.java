@@ -1,5 +1,6 @@
 package com.auth.users.services.impl;
 
+import com.auth.common.utils.ErrorCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -44,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenResponse login(LoginRequest request) throws AccessDeniedException {
+    public TokenResponse login(LoginRequest request) {
         log.info("[login] request={}", request);
 
         try {
@@ -61,7 +62,8 @@ public class AuthServiceImpl implements AuthService {
 
         } catch (AuthenticationException ex) {
             log.warn("[login] Failed email={}, reason={}", request.email(), ex.getMessage());
-            throw new AccessDeniedException("Invalid credentials");
+
+            throw new com.auth.common.error.AuthenticationException(ErrorCode.INVALID_CREDENTIALS);
         }
     }
 }
