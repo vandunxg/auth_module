@@ -1,12 +1,10 @@
 package com.auth.users.services.impl;
 
-import com.auth.common.utils.ErrorCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.file.AccessDeniedException;
 import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +14,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.auth.common.utils.ErrorCode;
 import com.auth.users.apis.request.LoginRequest;
 import com.auth.users.apis.request.RegisterRequest;
 import com.auth.users.apis.response.RegisterResponse;
