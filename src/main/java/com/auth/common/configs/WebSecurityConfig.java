@@ -1,5 +1,6 @@
-package com.auth.users.configs;
+package com.auth.common.configs;
 
+import com.auth.users.configs.CustomizeRequestFilter;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
