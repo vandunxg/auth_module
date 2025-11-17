@@ -1,4 +1,4 @@
-package com.auth.users.util;
+package com.auth.common.utils;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

@@ -31,7 +31,7 @@ import com.auth.users.repository.entity.User;
 import com.auth.users.service.AuthService;
 import com.auth.users.service.JwtService;
 import com.auth.users.service.UserService;
-import com.auth.users.util.TokenHasher;
+import com.auth.common.utils.TokenHasher;
 
 @Service
 @RequiredArgsConstructor
