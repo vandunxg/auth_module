@@ -24,7 +24,7 @@ import com.auth.users.api.request.LoginRequest;
 import com.auth.users.api.request.RegisterRequest;
 import com.auth.users.api.response.RegisterResponse;
 import com.auth.users.api.response.TokenResponse;
-import com.auth.users.config.UserPrincipal;
+import com.auth.common.configs.UserPrincipal;
 import com.auth.users.event.UserLogonEvent;
 import com.auth.users.event.UserSessionEvent;
 import com.auth.users.repository.entity.User;

@@ -4,7 +4,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.auth.common.enums.TokenType;
 import com.auth.users.api.response.TokenResponse;
-import com.auth.users.config.UserPrincipal;
+import com.auth.common.configs.UserPrincipal;
 
 public interface JwtService {
 

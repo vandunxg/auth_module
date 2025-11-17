@@ -1,4 +1,4 @@
-package com.auth.users.config;
+package com.auth.common.configs;
 
 import static com.auth.common.enums.TokenType.ACCESS_TOKEN;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
