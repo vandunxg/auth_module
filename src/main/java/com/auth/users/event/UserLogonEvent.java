@@ -6,7 +6,7 @@ import com.auth.common.enums.LoginStatus;
 
 public record UserLogonEvent(
         UUID userId,
-        String email,
+        String identifier,
         String platform,
         String deviceId,
         String ipAddress,

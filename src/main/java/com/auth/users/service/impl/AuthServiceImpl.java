@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Instant;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,26 +21,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.auth.common.configs.UserPrincipal;
-import com.auth.common.enums.LoginStatus;
-import com.auth.common.enums.SessionStatus;
-import com.auth.common.enums.TokenType;
+import com.auth.common.enums.*;
+import com.auth.common.error.UserValidationException;
 import com.auth.common.utils.ErrorCode;
 import com.auth.common.utils.TokenHasher;
-import com.auth.users.api.request.LoginRequest;
-import com.auth.users.api.request.RegisterRequest;
-import com.auth.users.api.response.LoginHistoryResponse;
-import com.auth.users.api.response.RegisterResponse;
-import com.auth.users.api.response.SessionResponse;
-import com.auth.users.api.response.TokenResponse;
+import com.auth.users.api.request.*;
+import com.auth.users.api.response.*;
 import com.auth.users.event.UserLogonEvent;
 import com.auth.users.event.UserLogoutEvent;
-import com.auth.users.event.UserRevokeSessionEvent;
 import com.auth.users.event.UserSessionEvent;
-import com.auth.users.repository.LoginHistoryRepository;
-import com.auth.users.repository.UserSessionRepository;
-import com.auth.users.repository.entity.LoginHistory;
-import com.auth.users.repository.entity.User;
-import com.auth.users.repository.entity.UserSession;
+import com.auth.users.repository.*;
+import com.auth.users.repository.entity.*;
 import com.auth.users.service.AuthService;
 import com.auth.users.service.JwtService;
 import com.auth.users.service.UserService;
@@ -51,13 +42,18 @@ import com.auth.users.service.UserService;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthServiceImpl implements AuthService {
 
+    final long RESET_TOKEN_EXPIRY_MS = 15 * 60 * 1000;
+
     UserService userService;
     JwtService jwtService;
     AuthenticationManager authenticationManager;
     ApplicationEventPublisher eventPublisher;
     TokenHasher tokenHasher;
     UserSessionRepository userSessionRepository;
-    LoginHistoryRepository loginHistoryRepository;
+    AuthKeyRepository authKeyRepository;
+    UserRepository userRepository;
+    CustomUserDetailsService customUserDetailsService;
+    PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -82,12 +78,14 @@ public class AuthServiceImpl implements AuthService {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
-
             User user = principal.getUser();
+
+            ensureUserActive(user);
 
             TokenResponse tokenResponse = jwtService.issueToken(principal);
             String refreshTokenHash = tokenHasher.hash(tokenResponse.refreshToken());
 
+            // login with a credentials => identifier set by credentials
             log.info("[login] publish UserLogonEvent when login successfully");
             eventPublisher.publishEvent(
                     new UserLogonEvent(
@@ -126,6 +124,55 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public TokenResponse loginWithKey(LoginWithKeyRequest request, HttpServletRequest httpRequest) {
+        log.info("[loginWithKey]={}", request);
+
+        try {
+            String key = request.key();
+            AuthKey authKey = getAuthKeyByHashKey(tokenHasher.hash(key));
+            User user = getUserById(authKey.getUserId());
+            UserPrincipal principal =
+                    (UserPrincipal) customUserDetailsService.loadUserByUsername(user.getEmail());
+
+            TokenResponse tokenResponse = jwtService.issueToken(principal);
+
+            // login with a key => identifier set by key
+            log.info("[loginWithKey] publish UserLogonEvent when login successfully");
+            eventPublisher.publishEvent(
+                    new UserLogonEvent(
+                            user.getId(),
+                            request.key(),
+                            request.platform(),
+                            request.deviceId(),
+                            getClientIp(httpRequest),
+                            LoginStatus.SUCCESS));
+
+            log.info("[loginWithKey] publish UserSessionEvent when login successfully");
+            eventPublisher.publishEvent(
+                    new UserSessionEvent(
+                            user.getId(),
+                            request.deviceId(),
+                            request.platform(),
+                            getClientIp(httpRequest),
+                            tokenHasher.hash(tokenResponse.refreshToken())));
+
+            return tokenResponse;
+        } catch (AuthenticationException ex) {
+            log.info("[loginWithKey] publish UserLogonEvent when login fail");
+            eventPublisher.publishEvent(
+                    new UserLogonEvent(
+                            null,
+                            request.key(),
+                            request.platform(),
+                            request.deviceId(),
+                            getClientIp(httpRequest),
+                            LoginStatus.FAILED));
+
+            throw new com.auth.common.error.AuthenticationException(ErrorCode.INVALID_KEY);
+        }
+    }
+
+    @Override
     @Transactional
     public void logout(HttpServletRequest request) {
         log.info("[logout]");
@@ -152,52 +199,131 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public List<LoginHistoryResponse> loginHistory() {
-        log.info("[loginHistory]");
+    @Transactional
+    public void verifyResetToken(String token) {
+        log.info("[verifyResetToken] token={}", token);
 
-        UserPrincipal principal = getUserPrincipal();
+        PasswordResetToken passwordResetToken = getPasswordResetTokenByTokenHash(token);
 
-        UUID userId = principal.getUser().getId();
+        ensureResetTokenNotExpired(passwordResetToken);
 
-        List<LoginHistory> loginHistories = loginHistoryRepository.findALlByUserId(userId);
-
-        return loginHistories.stream()
-                .map(x -> new LoginHistoryResponse(x.getIp(), x.getPlatform(), x.getLoginAt()))
-                .toList();
+        if (passwordResetToken.getStatus().equals(PasswordResetTokenStatus.USED)) {
+            throw new com.auth.common.error.AuthenticationException(
+                    ErrorCode.RESET_TOKEN_ALREADY_USED);
+        }
     }
 
     @Override
     @Transactional
-    public void revokeSession(String sessionId) {
-        log.info("[revokeSession] sessionId={}", sessionId);
+    public void resetPassword(ResetPasswordForgetRequest request) {
+        log.info("[resetPassword] request={}]", request);
 
-        UserPrincipal principal = getUserPrincipal();
-        User user = principal.getUser();
-        UUID uuidOfSessionId = UUID.fromString(sessionId);
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new UserValidationException(ErrorCode.CONFIRM_PASSWORD_NOT_MATCH);
+        }
 
-        eventPublisher.publishEvent(new UserRevokeSessionEvent(uuidOfSessionId, user.getId()));
+        String hashToken = request.code();
+
+        PasswordResetToken passwordResetToken = getPasswordResetTokenByTokenHash(hashToken);
+
+        if (passwordResetToken.getStatus().equals(PasswordResetTokenStatus.USED)) {
+            throw new com.auth.common.error.AuthenticationException(
+                    ErrorCode.RESET_TOKEN_ALREADY_USED);
+        }
+
+        if (passwordResetToken.getStatus().equals(PasswordResetTokenStatus.EXPIRED)) {
+            throw new com.auth.common.error.AuthenticationException(ErrorCode.RESET_TOKEN_EXPIRY);
+        }
+
+        userService.resetPassword(request.newPassword(), passwordResetToken.getUserId());
+
+        passwordResetToken.setStatus(PasswordResetTokenStatus.USED);
+
+        passwordResetTokenRepository.save(passwordResetToken);
+    }
+
+    @Transactional
+    void ensureResetTokenNotExpired(PasswordResetToken passwordResetToken) {
+        log.info("[ensureResetTokenNotExpired] token={}", passwordResetToken.getId());
+
+        if (passwordResetToken.getExpiresAt().isBefore(Instant.now())) {
+            passwordResetToken.setStatus(PasswordResetTokenStatus.EXPIRED);
+            passwordResetTokenRepository.save(passwordResetToken);
+            throw new com.auth.common.error.AuthenticationException(ErrorCode.RESET_TOKEN_EXPIRY);
+        }
     }
 
     @Override
-    public List<SessionResponse> getSessions() {
-        log.info("[getSessions]");
+    @Transactional
+    public PasswordResetResponse forgetPassword(ForgetPasswordRequest request) {
+        log.info("[forgetPassword] request={}", request);
 
-        UserPrincipal principal = getUserPrincipal();
-        UUID userId = principal.getUser().getId();
+        User user =
+                userRepository
+                        .findByEmail(request.email())
+                        .orElseThrow(
+                                () ->
+                                        new com.auth.common.error.AuthenticationException(
+                                                ErrorCode.USER_NOT_FOUND));
 
-        List<UserSession> sessions =
-                userSessionRepository.findAllByUserIdAndStatus(userId, SessionStatus.ACTIVE);
+        passwordResetTokenRepository.deleteAllByUserId(user.getId());
 
-        return sessions.stream()
-                .map(
-                        x ->
-                                new SessionResponse(
-                                        x.getId(),
-                                        x.getIp(),
-                                        x.getPlatform(),
-                                        x.getDeviceId(),
-                                        x.getLastActiveAt()))
-                .toList();
+        String rawToken = UUID.randomUUID().toString();
+        String tokenHash = tokenHasher.hash(rawToken);
+
+        PasswordResetToken passwordResetToken =
+                PasswordResetToken.builder()
+                        .userId(user.getId())
+                        .tokenHash(tokenHash)
+                        .expiresAt(Instant.now().plusMillis(RESET_TOKEN_EXPIRY_MS))
+                        .status(PasswordResetTokenStatus.ACTIVE)
+                        .build();
+
+        passwordResetTokenRepository.save(passwordResetToken);
+
+        // todo: publish event to send mail
+
+        return new PasswordResetResponse(tokenHash);
+    }
+
+    PasswordResetToken getPasswordResetTokenByTokenHash(String tokenHash) {
+
+        return passwordResetTokenRepository
+                .getPasswordResetTokenByTokenHash(tokenHash)
+                .orElseThrow(
+                        () ->
+                                new com.auth.common.error.AuthenticationException(
+                                        ErrorCode.INVALID_RESET_PASSWORD));
+    }
+
+    User getUserById(UUID userId) {
+        log.info("[getUserById] userId={}", userId);
+
+        return userRepository
+                .findById(userId)
+                .orElseThrow(
+                        () ->
+                                new com.auth.common.error.AuthenticationException(
+                                        ErrorCode.USER_NOT_FOUND));
+    }
+
+    AuthKey getAuthKeyByHashKey(String hashKey) {
+        log.info("[getAuthKeyByHashKey]");
+
+        return authKeyRepository
+                .findBySecretKeyHash(hashKey)
+                .orElseThrow(
+                        () ->
+                                new com.auth.common.error.AuthenticationException(
+                                        ErrorCode.INVALID_KEY));
+    }
+
+    void ensureUserActive(User user) {
+        log.info("[ensureUserActive] user={}", user.getId());
+
+        if (!UserStatus.ACTIVE.equals(user.getStatus())) {
+            throw new com.auth.common.error.AuthenticationException(ErrorCode.USER_NOT_ACTIVE);
+        }
     }
 
     UserPrincipal getUserPrincipal() {

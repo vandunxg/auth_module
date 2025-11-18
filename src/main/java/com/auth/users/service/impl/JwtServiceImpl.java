@@ -101,21 +101,26 @@ public class JwtServiceImpl implements JwtService {
         return extractClaim(token, tokenType, Claims::getExpiration);
     }
 
-    private SecretKey getKey(TokenType type) {
-        return switch (type) {
-            case ACCESS_TOKEN -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(ACCESS_KEY));
-            case REFRESH_TOKEN -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(REFRESH_KEY));
-        };
+    @Override
+    public String extractEmail(String token, TokenType type) {
+        return extractClaim(token, type, Claims::getSubject);
     }
 
-    private Long getExpiry(TokenType type) {
+    Long getExpiry(TokenType type) {
         return switch (type) {
             case ACCESS_TOKEN -> ACCESS_EXPIRY;
             case REFRESH_TOKEN -> REFRESH_EXPIRY;
         };
     }
 
-    private String createToken(Map<String, Object> claims, String subject, TokenType type) {
+    SecretKey getKey(TokenType type) {
+        return switch (type) {
+            case ACCESS_TOKEN -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(ACCESS_KEY));
+            case REFRESH_TOKEN -> Keys.hmacShaKeyFor(Decoders.BASE64.decode(REFRESH_KEY));
+        };
+    }
+
+    String createToken(Map<String, Object> claims, String subject, TokenType type) {
 
         SecretKey key = getKey(type);
         long expiry = getExpiry(type);
@@ -129,16 +134,11 @@ public class JwtServiceImpl implements JwtService {
                 .compact();
     }
 
-    @Override
-    public String extractEmail(String token, TokenType type) {
-        return extractClaim(token, type, Claims::getSubject);
-    }
-
-    private Claims extractAllClaims(String token, TokenType type) {
+    Claims extractAllClaims(String token, TokenType type) {
         return Jwts.parser().verifyWith(getKey(type)).build().parseSignedClaims(token).getPayload();
     }
 
-    private <T> T extractClaim(String token, TokenType type, Function<Claims, T> resolver) {
+    <T> T extractClaim(String token, TokenType type, Function<Claims, T> resolver) {
         return resolver.apply(extractAllClaims(token, type));
     }
 }

@@ -28,7 +28,7 @@ public class LoginHistory extends BaseEntity {
     UUID userId;
 
     @Column(nullable = false)
-    String email;
+    String identifier;
 
     String deviceId;
     String platform;

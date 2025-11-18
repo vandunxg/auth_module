@@ -1,0 +1,529 @@
+{
+  "meta": {
+    "format": "httpie",
+    "version": "1.0.0",
+    "contentType": "workspace",
+    "schema": "https://schema.httpie.io/1.0.0.json",
+    "docs": "https://httpie.io/r/help/export-from-httpie",
+    "source": "HTTPie Desktop 2025.2.0"
+  },
+  "entry": {
+    "name": "auth_demo",
+    "icon": {
+      "name": "default",
+      "color": "gray"
+    },
+    "collections": [
+      {
+        "name": "auth",
+        "icon": {
+          "name": "lock",
+          "color": "red"
+        },
+        "auth": {
+          "type": "none"
+        },
+        "requests": [
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/auth/register",
+            "method": "POST",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"fullName\": \"Nguyen Van Dung\",\n  \"email\": \"user@example.com\",\n  \"password\": \"Password@123\"\n}",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/auth/login",
+            "method": "POST",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"NewStrongPassword123!\",\n  \"platform\": \"WEB\",\n  \"deviceId\": \"WEB-CHROME-9F2A3D1C\"\n}",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/auth/forget-password",
+            "method": "POST",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n \"email\": \"user@example.com\"\n}\n",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/auth/reset-password?code=mO1ScgixNlzfcaXR7ejO9UlEtGKQmdpbVxOiMDCBd/8=",
+            "method": "GET",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"email\": \"admin@admin.com\"\n}\n",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/auth/reset-password",
+            "method": "POST",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"code\": \"tIeDmBw1qp31ltLIHJxAp2uGoq7TFGY7sonsOrux6T4=\",\n  \"newPassword\": \"NewStrongPassword123!\",\n  \"confirmPassword\": \"NewStrongPassword123!\"\n}\n",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/auth/login-with-key",
+            "method": "POST",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"key\": \"1d8ab15e-6cae-41d0-874e-7db49c239712\",\n  \"platform\": \"WEB\",\n  \"deviceId\": \"WEB-CHROME-9F2A3D1C\"\n}\n",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/auth/logout",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "x-token",
+                "value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJpZCI6IjA4YjQ0MDJkLTFiYmMtNDIxMC1iYmJlLTFiNmIzMWM1NzAyZSIsInR5cGUiOiJSRUZSRVNIX1RPS0VOIiwic3ViIjoiYWRtaW5AYWRtaW4uY29tIiwiaWF0IjoxNzYzNDQ5NjYzLCJleHAiOjE3NjYwNDE2NjN9.-JmLIQYxqPZdbXan16ZUS1tFR5fVfhGorIvieaxz_PX2GEbZcNG8IDjjuA385nwH",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/auth/refresh-token",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "x-token",
+                "value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJpZCI6IjA4YjQ0MDJkLTFiYmMtNDIxMC1iYmJlLTFiNmIzMWM1NzAyZSIsInR5cGUiOiJSRUZSRVNIX1RPS0VOIiwic3ViIjoiYWRtaW5AYWRtaW4uY29tIiwiaWF0IjoxNzYzNDQ5NjYzLCJleHAiOjE3NjYwNDE2NjN9.-JmLIQYxqPZdbXan16ZUS1tFR5fVfhGorIvieaxz_PX2GEbZcNG8IDjjuA385nwH",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "users",
+        "icon": {
+          "name": "database",
+          "color": "green"
+        },
+        "auth": {
+          "type": "bearer",
+          "target": "headers",
+          "credentials": {
+            "username": "",
+            "password": "eyJhbGciOiJIUzM4NCJ9.eyJyb2xlcyI6W10sImlkIjoiMDhiNDQwMmQtMWJiYy00MjEwLWJiYmUtMWI2YjMxYzU3MDJlIiwidHlwZSI6IkFDQ0VTU19UT0tFTiIsImVtYWlsIjoiYWRtaW5AYWRtaW4uY29tIiwic3ViIjoiYWRtaW5AYWRtaW4uY29tIiwiaWF0IjoxNzYzNDQ5NjYzLCJleHAiOjE3NjYwNDE2NjN9.5wA5TYKmwRi5jSOjpIaNTksoV1x0vYP2iajPI-1XSUVTTZAMdtuhVhjzSf7qf6Pf"
+          }
+        },
+        "requests": [
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/users/revoke-session/cf6e5c82-373b-40b6-b3f7-b35555b06616",
+            "method": "POST",
+            "headers": [
+              {
+                "name": "x-token",
+                "value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJpZCI6IjlmZjVmODEzLWYzYmEtNDA1NC05MDkyLTU2MmRiNDRiYmIzOSIsInR5cGUiOiJSRUZSRVNIX1RPS0VOIiwic3ViIjoidXNlMXIxMTExMUBleGFtcGxlLmNvbSIsImlhdCI6MTc2MzQzNjQzNCwiZXhwIjoxNzY2MDI4NDM0fQ.gX0_NTLfUQNgVcJOXHb30DYfo7sl--JctwySBgERGJusvy6VI0-DdvTC37OOy7eY",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/users/sessions",
+            "method": "GET",
+            "headers": [
+              {
+                "name": "x-token",
+                "value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJpZCI6IjlmZjVmODEzLWYzYmEtNDA1NC05MDkyLTU2MmRiNDRiYmIzOSIsInR5cGUiOiJSRUZSRVNIX1RPS0VOIiwic3ViIjoidXNlMXIxMTExMUBleGFtcGxlLmNvbSIsImlhdCI6MTc2MzQzNjQzNCwiZXhwIjoxNzY2MDI4NDM0fQ.gX0_NTLfUQNgVcJOXHb30DYfo7sl--JctwySBgERGJusvy6VI0-DdvTC37OOy7eY",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/users/login-history",
+            "method": "GET",
+            "headers": [
+              {
+                "name": "x-token",
+                "value": "Bearer eyJhbGciOiJIUzM4NCJ9.eyJpZCI6IjlmZjVmODEzLWYzYmEtNDA1NC05MDkyLTU2MmRiNDRiYmIzOSIsInR5cGUiOiJSRUZSRVNIX1RPS0VOIiwic3ViIjoidXNlMXIxMTExMUBleGFtcGxlLmNvbSIsImlhdCI6MTc2MzQzNjQzNCwiZXhwIjoxNzY2MDI4NDM0fQ.gX0_NTLfUQNgVcJOXHb30DYfo7sl--JctwySBgERGJusvy6VI0-DdvTC37OOy7eY",
+                "enabled": true
+              }
+            ],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/users/me",
+            "method": "GET",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "none",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/users/generate-key",
+            "method": "GET",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "none",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/users/reset-password",
+            "method": "POST",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "text",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "{\n  \"oldPassword\": \"Admin@123\",\n  \"newPassword\": \"Fucku@123\"\n}",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          },
+          {
+            "name": "",
+            "url": "{{BASE_URL}}/users/list-users",
+            "method": "GET",
+            "headers": [],
+            "queryParams": [],
+            "pathParams": [],
+            "auth": {
+              "type": "inherited"
+            },
+            "body": {
+              "type": "none",
+              "file": {
+                "name": ""
+              },
+              "text": {
+                "value": "",
+                "format": "application/json"
+              },
+              "form": {
+                "isMultipart": false,
+                "fields": []
+              },
+              "graphql": {
+                "query": "",
+                "variables": ""
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "environments": [
+      {
+        "name": "Defaults",
+        "color": "gray",
+        "isDefault": true,
+        "isLocalOnly": false,
+        "variables": [
+          {
+            "name": "BASE_URL",
+            "value": "http://localhost:8080\n",
+            "isSecret": false
+          }
+        ]
+      }
+    ],
+    "drafts": []
+  }
+}

@@ -15,8 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.auth.common.utils.MessageConstant;
 import com.auth.common.utils.ResponseUtil;
-import com.auth.users.api.request.LoginRequest;
-import com.auth.users.api.request.RegisterRequest;
+import com.auth.users.api.request.*;
 import com.auth.users.service.AuthService;
 
 @RestController
@@ -45,6 +44,14 @@ public class AuthController {
                 MessageConstant.LOGIN_SUCCESS, authService.login(request, httpRequest));
     }
 
+    @PostMapping("/login-with-key")
+    ResponseEntity<?> loginWithKey(
+            @RequestBody LoginWithKeyRequest request, HttpServletRequest httpRequest) {
+        log.info("[POST] /auth/login-with-key]={}", request);
+
+        return ResponseUtil.success(authService.loginWithKey(request, httpRequest));
+    }
+
     @PostMapping("/logout")
     ResponseEntity<?> logout(HttpServletRequest request) {
         log.info("[POST] /auth/logout]");
@@ -61,26 +68,28 @@ public class AuthController {
         return ResponseUtil.success(authService.refreshToken(request));
     }
 
-    @GetMapping("/login-history")
-    ResponseEntity<?> loginHistory() {
-        log.info("[GET] /auth/login-history");
+    @PostMapping("/forget-password")
+    ResponseEntity<?> forgetPassword(@RequestBody @Valid ForgetPasswordRequest request) {
+        log.info("[POST] /auth/forget-password");
 
-        return ResponseUtil.success(MessageConstant.READ_SUCCESS, authService.loginHistory());
+        return ResponseUtil.success(authService.forgetPassword(request));
     }
 
-    @GetMapping("/sessions")
-    ResponseEntity<?> sessions() {
-        log.info("[GET] /auth/sessions");
+    @GetMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam("code") String resetCode) {
+        log.info("[GET] /auth/reset-password?code={}", resetCode);
 
-        return ResponseUtil.success(MessageConstant.READ_SUCCESS, authService.getSessions());
+        authService.verifyResetToken(resetCode);
+
+        return ResponseUtil.success(MessageConstant.READ_SUCCESS);
     }
 
-    @PostMapping("/revoke-session/{session-id}")
-    ResponseEntity<?> revokeSession(@PathVariable("session-id") String sessionId) {
-        log.info("[POST] /auth/revoke-session/{}", sessionId);
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody @Valid ResetPasswordForgetRequest request) {
+        log.info("[POST] /auth/reset-password={}", request);
 
-        authService.revokeSession(sessionId);
+        authService.resetPassword(request);
 
-        return ResponseUtil.success(MessageConstant.SESSION_REVOKED);
+        return ResponseUtil.success(MessageConstant.UPDATE_SUCCESS);
     }
 }

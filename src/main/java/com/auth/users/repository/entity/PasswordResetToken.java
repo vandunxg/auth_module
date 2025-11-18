@@ -3,7 +3,7 @@ package com.auth.users.repository.entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -31,7 +31,7 @@ public class PasswordResetToken extends BaseEntity {
     @Column(nullable = false)
     String tokenHash;
 
-    LocalDateTime expiresAt;
+    Instant expiresAt;
 
     @Enumerated(value = EnumType.STRING)
     PasswordResetTokenStatus status;

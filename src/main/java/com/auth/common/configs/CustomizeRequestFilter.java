@@ -31,7 +31,6 @@ import com.auth.common.utils.ErrorCode;
 import com.auth.common.utils.ResponseUtil;
 import com.auth.users.service.JwtService;
 import com.auth.users.service.impl.CustomUserDetailsService;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
@@ -64,7 +63,6 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 log.info(e.getMessage());
 
-                JsonNode node = new ObjectMapper().readTree(token);
                 ResponseEntity<ErrorResponse> errorResponse =
                         ResponseUtil.error(ErrorCode.TOKEN_EXPIRED);
 

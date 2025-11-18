@@ -3,7 +3,7 @@ package com.auth.users.repository.entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -33,7 +33,11 @@ public class AuthKey extends BaseEntity {
     @Column(nullable = false)
     String secretKeyHash;
 
-    LocalDateTime expiresAt;
+    Instant expiresAt;
 
-    LocalDateTime loginAt;
+    Instant loginAt;
+
+    public boolean isExpired() {
+        return Instant.now().isAfter(expiresAt);
+    }
 }

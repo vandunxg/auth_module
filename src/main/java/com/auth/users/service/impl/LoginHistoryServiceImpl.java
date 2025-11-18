@@ -33,7 +33,7 @@ public class LoginHistoryServiceImpl implements LoginHistoryService {
         LoginHistory loginHistory =
                 LoginHistory.builder()
                         .userId(Objects.isNull(event.userId()) ? null : event.userId())
-                        .email(event.email())
+                        .identifier(event.identifier())
                         .deviceId(event.deviceId())
                         .platform(event.platform())
                         .ip(event.ipAddress())
