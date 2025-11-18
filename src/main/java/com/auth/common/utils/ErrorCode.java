@@ -15,7 +15,8 @@ public enum ErrorCode {
     TOKEN_EXPIRED("Token has expired", "TOKEN_EXPIRED", HttpStatus.UNAUTHORIZED),
     TOKEN_REVOKED("Token has been revoked", "TOKEN_REVOKED", HttpStatus.UNAUTHORIZED),
     TOKEN_BLACKLIST("Token blacklisted", "TOKEN_BLACKLIST", HttpStatus.UNAUTHORIZED),
-
+    FAIL_LOGOUT("Fail to logout", "FAIL_LOGOUT", HttpStatus.FORBIDDEN),
+    INVALID_TOKEN("Invalid token", "INVALID_TOKEN", HttpStatus.UNAUTHORIZED),
     // ===== USER =====
     USER_NOT_FOUND("User not found", "USER_NOT_FOUND", HttpStatus.NOT_FOUND),
     EMAIL_EXISTS("Email already exists", "EMAIL_EXISTS", HttpStatus.BAD_REQUEST),

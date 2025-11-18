@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.auth.roles.repository.entity.UserRoleRepository;
+import com.auth.roles.repository.UserRoleRepository;
 import com.auth.roles.service.UserRoleService;
 import com.auth.users.repository.entity.UserRole;
 

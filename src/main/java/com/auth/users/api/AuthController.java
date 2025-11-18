@@ -11,10 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.auth.common.utils.MessageConstant;
 import com.auth.common.utils.ResponseUtil;
@@ -46,5 +43,44 @@ public class AuthController {
 
         return ResponseUtil.success(
                 MessageConstant.LOGIN_SUCCESS, authService.login(request, httpRequest));
+    }
+
+    @PostMapping("/logout")
+    ResponseEntity<?> logout(HttpServletRequest request) {
+        log.info("[POST] /auth/logout]");
+
+        authService.logout(request);
+
+        return ResponseUtil.success(MessageConstant.LOGOUT_SUCCESS);
+    }
+
+    @PostMapping("/refresh-token")
+    ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        log.info("[POST] /auth/refresh-token");
+
+        return ResponseUtil.success(authService.refreshToken(request));
+    }
+
+    @GetMapping("/login-history")
+    ResponseEntity<?> loginHistory() {
+        log.info("[GET] /auth/login-history");
+
+        return ResponseUtil.success(MessageConstant.READ_SUCCESS, authService.loginHistory());
+    }
+
+    @GetMapping("/sessions")
+    ResponseEntity<?> sessions() {
+        log.info("[GET] /auth/sessions");
+
+        return ResponseUtil.success(MessageConstant.READ_SUCCESS, authService.getSessions());
+    }
+
+    @PostMapping("/revoke-session/{session-id}")
+    ResponseEntity<?> revokeSession(@PathVariable("session-id") String sessionId) {
+        log.info("[POST] /auth/revoke-session/{}", sessionId);
+
+        authService.revokeSession(sessionId);
+
+        return ResponseUtil.success(MessageConstant.SESSION_REVOKED);
     }
 }

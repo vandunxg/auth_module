@@ -16,12 +16,13 @@ import java.util.function.Function;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.auth.common.configs.UserPrincipal;
 import com.auth.common.enums.TokenType;
 import com.auth.users.api.response.TokenResponse;
-import com.auth.common.configs.UserPrincipal;
 import com.auth.users.repository.entity.User;
 import com.auth.users.service.JwtService;
 
@@ -51,15 +52,13 @@ public class JwtServiceImpl implements JwtService {
     public String generateAccessToken(UserPrincipal principal) {
 
         User user = principal.getUser();
-        //        List<String> roles = principal.getAuthorities()
-        //                .stream()
-        //                .map(GrantedAuthority::getAuthority)
-        //                .toList();
+        List<String> roles =
+                principal.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList();
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", user.getId());
         claims.put("email", user.getEmail());
-        //        claims.put("roles", roles);
+        claims.put("roles", roles);
         claims.put("type", TokenType.ACCESS_TOKEN.name());
 
         return createToken(claims, user.getEmail(), TokenType.ACCESS_TOKEN);
@@ -73,7 +72,6 @@ public class JwtServiceImpl implements JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", user.getId());
         claims.put("type", TokenType.REFRESH_TOKEN.name());
-
         return createToken(claims, user.getEmail(), TokenType.REFRESH_TOKEN);
     }
 
@@ -96,7 +94,8 @@ public class JwtServiceImpl implements JwtService {
         return extractExpiration(token, tokenType).before(new Date());
     }
 
-    Date extractExpiration(String token, TokenType tokenType) {
+    @Override
+    public Date extractExpiration(String token, TokenType tokenType) {
         log.info("[extractExpiration]");
 
         return extractClaim(token, tokenType, Claims::getExpiration);

@@ -26,13 +26,10 @@ public class TokenHasher {
 
     public String hash(String token) {
         try {
-            Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secretKey = new SecretKeySpec(SECRET.getBytes(), "HmacSHA256");
-            sha256_HMAC.init(secretKey);
-
-            byte[] hashBytes = sha256_HMAC.doFinal(token.getBytes());
-            return Base64.getEncoder().encodeToString(hashBytes);
-
+            Mac sha256 = Mac.getInstance("HmacSHA256");
+            SecretKeySpec key = new SecretKeySpec(SECRET.getBytes(), "HmacSHA256");
+            sha256.init(key);
+            return Base64.getEncoder().encodeToString(sha256.doFinal(token.getBytes()));
         } catch (Exception e) {
             throw new RuntimeException("Error hashing refresh token", e);
         }

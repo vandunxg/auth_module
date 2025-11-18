@@ -1,6 +1,6 @@
 package com.auth.common.utils;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -52,7 +52,7 @@ public final class ResponseUtil {
         ErrorResponse body =
                 ErrorResponse.builder()
                         .success(false)
-                        .timestamp(Instant.now())
+                        .timestamp(LocalDateTime.now())
                         .code(code.getCode())
                         .status(code.getHttpStatus().value())
                         .error(code.getHttpStatus().getReasonPhrase())

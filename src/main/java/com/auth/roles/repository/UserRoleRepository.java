@@ -1,4 +1,4 @@
-package com.auth.roles.repository.entity;
+package com.auth.roles.repository;
 
 import java.util.UUID;
 

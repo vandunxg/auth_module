@@ -31,7 +31,8 @@ import com.auth.common.utils.ErrorCode;
 import com.auth.common.utils.ResponseUtil;
 import com.auth.users.service.JwtService;
 import com.auth.users.service.impl.CustomUserDetailsService;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
 
     JwtService jwtService;
     CustomUserDetailsService customUserDetailsService;
-    Gson gson;
+    ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(
@@ -63,10 +64,14 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 log.info(e.getMessage());
 
+                JsonNode node = new ObjectMapper().readTree(token);
                 ResponseEntity<ErrorResponse> errorResponse =
                         ResponseUtil.error(ErrorCode.TOKEN_EXPIRED);
+
+                String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write(gson.toJson(errorResponse.getBody()));
+                response.getWriter().write(jsonResponse);
                 return;
             }
 

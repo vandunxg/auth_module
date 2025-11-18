@@ -5,12 +5,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.List;
+
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.auth.common.configs.UserPrincipal;
+import com.auth.roles.repository.RoleRepository;
+import com.auth.roles.repository.entity.Role;
 import com.auth.users.repository.UserRepository;
 import com.auth.users.repository.entity.User;
 
@@ -21,21 +26,22 @@ import com.auth.users.repository.entity.User;
 public class CustomUserDetailsService implements UserDetailsService {
 
     UserRepository userRepository;
+    RoleRepository roleRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) {
+        log.info("[loadUserByUsername] email={}", email);
+
         User user =
                 userRepository
                         .findByEmail(email)
                         .orElseThrow(() -> new UsernameNotFoundException(email));
 
-        //        List<String> roles = userRoleRepo.findRoleNamesByUserId(user.getId());
-        //
-        //        List<SimpleGrantedAuthority> authorities =
-        //                roles.stream()
-        //                        .map(SimpleGrantedAuthority::new)
-        //                        .toList();
+        List<Role> roles = roleRepository.findAllRolesByUserId(user.getId());
 
-        return new UserPrincipal(user, null);
+        List<SimpleGrantedAuthority> authorities =
+                roles.stream().map(x -> new SimpleGrantedAuthority("ROLE_" + x.getName())).toList();
+
+        return new UserPrincipal(user, authorities);
     }
 }

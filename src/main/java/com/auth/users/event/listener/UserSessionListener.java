@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.auth.users.event.UserLogoutEvent;
+import com.auth.users.event.UserRevokeSessionEvent;
 import com.auth.users.event.UserSessionEvent;
 import com.auth.users.service.UserSessionService;
 
@@ -25,5 +27,19 @@ public class UserSessionListener {
         log.info("[onUserLogon] event={}", event);
 
         userSessionService.createSessionOnLogin(event);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onUserLogout(UserLogoutEvent event) {
+        log.info("[onUserLogout] event={}", event);
+
+        userSessionService.logoutSession(event);
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    public void onUserRevokedSession(UserRevokeSessionEvent event) {
+        log.info("[onUserRevokedSession] event={}", event);
+
+        userSessionService.revokeSession(event);
     }
 }
