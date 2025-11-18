@@ -23,7 +23,6 @@ import com.auth.users.service.UserService;
 public class UserController {
 
     UserService userService;
-    AuthService authService;
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {
