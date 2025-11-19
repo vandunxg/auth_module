@@ -37,8 +37,8 @@ public class UserSessionServiceImpl implements UserSessionService {
     RedisUserSessionService redisUserSessionService;
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void createSessionOnLogin(UserSessionEvent event) {
+    @Transactional
+    public UserSession createSessionOnLogin(UserSessionEvent event) {
         log.info("[createSessionOnLogin] event={}", event);
 
         UserSession userSession =
@@ -57,6 +57,8 @@ public class UserSessionServiceImpl implements UserSessionService {
         userSessionRepository.save(userSession);
 
         redisUserSessionService.saveSession(userSession, userSession.getExpiresAt());
+
+        return userSession;
     }
 
     @Override
@@ -73,6 +75,9 @@ public class UserSessionServiceImpl implements UserSessionService {
                             .orElseThrow(
                                     () -> new AuthenticationException(ErrorCode.INVALID_TOKEN));
         }
+
+        // delete session from redis
+        redisUserSessionService.deleteSession(session);
 
         changeSessionStatus(session, SessionStatus.LOGGED_OUT);
 

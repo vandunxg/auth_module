@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import com.auth.users.repository.entity.UserSession;
 import com.auth.users.service.RedisUserSessionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RedisUserSessionServiceImpl implements RedisUserSessionService {
 
     StringRedisTemplate redisTemplate;
-    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectMapper objectMapper =
+            new ObjectMapper()
+                    .registerModule(new JavaTimeModule())
+                    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     static final String SESSION_KEY_PREFIX = "session:"; // session:<sessionId>
     static final String SESSION_TOKEN_PREFIX = "sessionToken:"; // sessionToken:<tokenHash>

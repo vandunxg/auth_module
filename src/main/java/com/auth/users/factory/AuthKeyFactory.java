@@ -20,6 +20,7 @@ import com.auth.users.repository.entity.AuthKey;
 public class AuthKeyFactory {
 
     TokenHasher tokenHasher;
+
     @NonFinal
     @Value("${spring.application.auth-key-expiry-minutes}")
     long AUTH_SECRET_EXPIRY_TIME;

@@ -10,6 +10,9 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,10 +29,14 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.auth.common.enums.SessionStatus;
+import com.auth.common.error.AuthenticationException;
 import com.auth.common.response.ErrorResponse;
 import com.auth.common.utils.ErrorCode;
 import com.auth.common.utils.ResponseUtil;
+import com.auth.users.repository.entity.UserSession;
 import com.auth.users.service.JwtService;
+import com.auth.users.service.RedisUserSessionService;
 import com.auth.users.service.impl.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -42,6 +49,7 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
     JwtService jwtService;
     CustomUserDetailsService customUserDetailsService;
     ObjectMapper objectMapper;
+    RedisUserSessionService redisUserSessionService;
 
     @Override
     protected void doFilterInternal(
@@ -57,9 +65,25 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             log.info("Token {}", token.substring(0, 10));
             String email;
-
             try {
                 email = jwtService.extractEmail(token, ACCESS_TOKEN);
+                String sessionId = jwtService.extractSessionId(token, ACCESS_TOKEN);
+
+                UserSession userSession =
+                        redisUserSessionService.getBySessionId(UUID.fromString(sessionId));
+
+                if (Objects.isNull(userSession)) {
+                    throw new AuthenticationException(ErrorCode.SESSION_NOT_FOUND);
+                }
+
+                if (!userSession.getStatus().equals(SessionStatus.ACTIVE)) {
+                    throw new AuthenticationException(ErrorCode.SESSION_REVOKED);
+                }
+
+                if (userSession.getExpiresAt().isBefore(Instant.now())) {
+                    throw new AuthenticationException(ErrorCode.SESSION_EXPIRED);
+                }
+
                 log.info("email: {}", email);
             } catch (Exception e) {
                 log.info(e.getMessage());
@@ -68,8 +92,8 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
                         ResponseUtil.error(ErrorCode.TOKEN_EXPIRED);
 
                 String jsonResponse = objectMapper.writeValueAsString(errorResponse);
-
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json");
                 response.getWriter().write(jsonResponse);
                 return;
             }

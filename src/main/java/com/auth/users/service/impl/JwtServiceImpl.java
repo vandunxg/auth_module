@@ -95,6 +95,25 @@ public class JwtServiceImpl implements JwtService {
     }
 
     @Override
+    public String generateAccessToken(UserPrincipal userPrincipal, UUID sessionId) {
+
+        User user = userPrincipal.getUser();
+        List<String> roles =
+                userPrincipal.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList();
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("id", user.getId());
+        claims.put("email", user.getEmail());
+        claims.put("roles", roles);
+        claims.put("sessionId", sessionId);
+        claims.put("type", TokenType.ACCESS_TOKEN.name());
+
+        return createToken(claims, user.getEmail(), TokenType.ACCESS_TOKEN);
+    }
+
+    @Override
     public String generateRefreshToken(UserPrincipal principal) {
 
         User user = principal.getUser();
@@ -126,6 +145,13 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String extractEmail(String token, TokenType type) {
         return extractClaim(token, type, Claims::getSubject);
+    }
+
+    @Override
+    public String extractSessionId(String token, TokenType tokenType) {
+        log.info("[extractSessionId]");
+
+        return extractClaim(token, tokenType, claims -> claims.get("sessionId", String.class));
     }
 
     User findUserByEmail(String email) {

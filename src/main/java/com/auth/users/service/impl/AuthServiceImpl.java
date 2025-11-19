@@ -35,6 +35,7 @@ import com.auth.users.repository.entity.*;
 import com.auth.users.service.AuthService;
 import com.auth.users.service.JwtService;
 import com.auth.users.service.UserService;
+import com.auth.users.service.UserSessionService;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
     UserRepository userRepository;
     CustomUserDetailsService customUserDetailsService;
     PasswordResetTokenRepository passwordResetTokenRepository;
+    UserSessionService userSessionService;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -86,19 +88,27 @@ public class AuthServiceImpl implements AuthService {
 
             ensureUserActive(user);
 
-            TokenResponse tokenResponse = jwtService.issueToken(principal);
-            String refreshTokenHash = tokenHasher.hash(tokenResponse.refreshToken());
+            String refreshToken = jwtService.generateRefreshToken(principal);
+            UserSession userSession =
+                    userSessionService.createSessionOnLogin(
+                            new UserSessionEvent(
+                                    user.getId(),
+                                    request.deviceId(),
+                                    request.platform(),
+                                    getClientIp(httpRequest),
+                                    tokenHasher.hash(refreshToken)));
+            String accessToken = jwtService.generateAccessToken(principal, userSession.getId());
 
-            log.info("[login] publish UserSessionEvent when login successfully");
-            eventPublisher.publishEvent(
-                    new UserSessionEvent(
-                            user.getId(),
-                            request.deviceId(),
-                            request.platform(),
-                            getClientIp(httpRequest),
-                            refreshTokenHash));
+            //            log.info("[login] publish UserSessionEvent when login successfully");
+            //            eventPublisher.publishEvent(
+            //                    new UserSessionEvent(
+            //                            user.getId(),
+            //                            request.deviceId(),
+            //                            request.platform(),
+            //                            getClientIp(httpRequest),
+            //                            refreshTokenHash));
 
-            return tokenResponse;
+            return new TokenResponse(accessToken, refreshToken);
         } catch (AuthenticationException ex) {
             log.warn("[login] Failed email={}, reason={}", request.email(), ex.getMessage());
 
@@ -133,18 +143,27 @@ public class AuthServiceImpl implements AuthService {
                     (UserPrincipal) customUserDetailsService.loadUserByUsername(user.getEmail());
             userId = user.getId();
 
-            TokenResponse tokenResponse = jwtService.issueToken(principal);
+            String refreshToken = jwtService.generateRefreshToken(principal);
+            UserSession userSession =
+                    userSessionService.createSessionOnLogin(
+                            new UserSessionEvent(
+                                    user.getId(),
+                                    request.deviceId(),
+                                    request.platform(),
+                                    getClientIp(httpRequest),
+                                    tokenHasher.hash(refreshToken)));
+            String accessToken = jwtService.generateAccessToken(principal, userSession.getId());
 
-            log.info("[loginWithKey] publish UserSessionEvent when login successfully");
-            eventPublisher.publishEvent(
-                    new UserSessionEvent(
-                            user.getId(),
-                            request.deviceId(),
-                            request.platform(),
-                            getClientIp(httpRequest),
-                            tokenHasher.hash(tokenResponse.refreshToken())));
+            //            log.info("[login] publish UserSessionEvent when login successfully");
+            //            eventPublisher.publishEvent(
+            //                    new UserSessionEvent(
+            //                            user.getId(),
+            //                            request.deviceId(),
+            //                            request.platform(),
+            //                            getClientIp(httpRequest),
+            //                            refreshTokenHash));
 
-            return tokenResponse;
+            return new TokenResponse(accessToken, refreshToken);
         } catch (AuthenticationException ex) {
             log.info("[loginWithKey]={}", ex.getMessage());
 
