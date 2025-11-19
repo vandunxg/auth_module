@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.List;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -35,6 +36,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthKeyRequestFilter extends OncePerRequestFilter {
 
+    List<String> API_KEY_PATHS = List.of("/users/me");
+
     AuthKeyService authKeyService;
     ObjectMapper objectMapper;
     CustomUserDetailsService customUserDetailsService;
@@ -45,18 +48,26 @@ public class AuthKeyRequestFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-
         log.info("[AUTH-KEY-FILTER] {} {}", request.getMethod(), request.getRequestURI());
 
         if (isRequestAuthenticated()) {
-            log.info("[REQUEST ALREADY AUTHENTICATED BY KEY]");
+            log.info("[AUTH-KEY-FILTER] REQUEST ALREADY AUTHENTICATED");
+            filterChain.doFilter(request, response);
+            return;
+        }
 
+        String urlPath = request.getRequestURI();
+        boolean isApiEndpointRequest = API_KEY_PATHS.stream().anyMatch(urlPath::equals);
+
+        if (!isApiEndpointRequest) {
+            log.info("[AUTH-KEY-FILTER] NOT API KEY ENDPOINT");
             filterChain.doFilter(request, response);
             return;
         }
 
         String apiKey = request.getHeader("x-api-key");
         if (apiKey == null || apiKey.isBlank()) {
+            log.warn("[AUTH-KEY-FILTER] Missing x-api-key");
             filterChain.doFilter(request, response);
             return;
         }
@@ -68,7 +79,6 @@ public class AuthKeyRequestFilter extends OncePerRequestFilter {
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-
             auth.setDetails(new WebAuthenticationDetails(request));
 
             SecurityContext context = SecurityContextHolder.createEmptyContext();
@@ -77,15 +87,17 @@ public class AuthKeyRequestFilter extends OncePerRequestFilter {
 
             log.info("[AUTH-KEY-FILTER] AUTHENTICATED BY API-KEY: {}", email);
 
+            filterChain.doFilter(request, response);
         } catch (Exception ex) {
             log.error("[AUTH-KEY-FILTER] INVALID KEY: {}", ex.getMessage());
-            ResponseEntity<ErrorResponse> error = ResponseUtil.error(ErrorCode.INVALID_KEY);
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.getWriter().write(objectMapper.writeValueAsString(error));
-            return;
-        }
 
-        filterChain.doFilter(request, response);
+            ResponseEntity<ErrorResponse> error = ResponseUtil.error(ErrorCode.INVALID_KEY);
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+
+            response.getWriter().write(objectMapper.writeValueAsString(error.getBody()));
+        }
     }
 
     Boolean isRequestAuthenticated() {

@@ -5,7 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import com.auth.users.event.UserRevokeSessionEvent;
 import com.auth.users.event.UserSessionEvent;
 import com.auth.users.repository.UserSessionRepository;
 import com.auth.users.repository.entity.UserSession;
+import com.auth.users.service.RedisUserSessionService;
 import com.auth.users.service.UserSessionService;
 
 @Service
@@ -28,7 +31,10 @@ import com.auth.users.service.UserSessionService;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserSessionServiceImpl implements UserSessionService {
 
+    long SESSION_EXPIRE_DAYS = 30;
+
     UserSessionRepository userSessionRepository;
+    RedisUserSessionService redisUserSessionService;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -43,11 +49,14 @@ public class UserSessionServiceImpl implements UserSessionService {
                         .platform(event.platform())
                         .status(SessionStatus.ACTIVE)
                         .lastActiveAt(LocalDateTime.now())
+                        .expiresAt(Instant.now().plus(SESSION_EXPIRE_DAYS, ChronoUnit.DAYS))
                         .refreshTokenHash(event.refreshTokenHash())
                         .build();
 
         log.info("[createSessionOnLogin] save session to db");
         userSessionRepository.save(userSession);
+
+        redisUserSessionService.saveSession(userSession, userSession.getExpiresAt());
     }
 
     @Override
@@ -55,15 +64,20 @@ public class UserSessionServiceImpl implements UserSessionService {
     public void logoutSession(UserLogoutEvent event) {
         log.info("[logoutSession] event={}", event);
 
-        UserSession userSession =
-                userSessionRepository
-                        .findByRefreshTokenHash(event.tokenHash())
-                        .orElseThrow(() -> new AuthenticationException(ErrorCode.INVALID_TOKEN));
+        UserSession session = redisUserSessionService.getByTokenHash(event.tokenHash());
 
-        changeSessionStatus(userSession, SessionStatus.LOGGED_OUT);
+        if (session == null) {
+            session =
+                    userSessionRepository
+                            .findByRefreshTokenHash(event.tokenHash())
+                            .orElseThrow(
+                                    () -> new AuthenticationException(ErrorCode.INVALID_TOKEN));
+        }
+
+        changeSessionStatus(session, SessionStatus.LOGGED_OUT);
 
         log.info("[logoutSession] session terminated");
-        userSessionRepository.save(userSession);
+        userSessionRepository.save(session);
     }
 
     @Override
@@ -71,15 +85,17 @@ public class UserSessionServiceImpl implements UserSessionService {
     public void revokeSession(UserRevokeSessionEvent event) {
         log.info("[revokeSession] event={}", event);
 
-        UserSession userSession =
-                getUserSessionBySessionIdAndUserId(event.sessionId(), event.userId());
+        UserSession session = redisUserSessionService.getBySessionId(event.sessionId());
+        if (session == null) {
+            session = getUserSessionBySessionIdAndUserId(event.sessionId(), event.userId());
+        }
 
-        ensureSessionIsActive(userSession);
+        ensureSessionIsActive(session);
 
-        changeSessionStatus(userSession, SessionStatus.REVOKED_BY_USER);
+        changeSessionStatus(session, SessionStatus.REVOKED_BY_USER);
 
         log.info("[revokeSession] session revoked");
-        userSessionRepository.save(userSession);
+        userSessionRepository.save(session);
     }
 
     void ensureSessionIsActive(UserSession userSession) {

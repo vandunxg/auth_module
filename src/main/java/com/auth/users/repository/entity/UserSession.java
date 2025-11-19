@@ -3,6 +3,7 @@ package com.auth.users.repository.entity;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -41,4 +42,7 @@ public class UserSession extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     SessionStatus status;
+
+    @Column(nullable = false)
+    Instant expiresAt;
 }
