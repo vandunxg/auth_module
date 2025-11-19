@@ -29,4 +29,6 @@ public interface UserService {
     void revokeSession(String sessionId);
 
     List<SessionResponse> getSessions();
+
+    void deleteAuthKey(String key);
 }

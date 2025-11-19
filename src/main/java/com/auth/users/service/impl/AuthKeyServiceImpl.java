@@ -32,6 +32,38 @@ public class AuthKeyServiceImpl implements AuthKeyService {
         return authKey.getEmail();
     }
 
+    @Override
+    public void deleteAuthKey(String key) {
+        log.info("[deleteAuthKey]");
+
+        AuthKey authKey = getAuthKeyByHashKey(tokenHasher.hash(key));
+        isKeyValid(authKey);
+
+        authKey.setDeleted(true);
+
+        authKeyRepository.save(authKey);
+    }
+
+    @Override
+    public void isKeyActive(String key) {
+        log.info("[isKeyActive]");
+
+        AuthKey authKey = getAuthKeyByHashKey(tokenHasher.hash(key));
+        isKeyValid(authKey);
+    }
+
+    void isKeyValid(AuthKey authKey) {
+        log.info("[isKeyValid]");
+
+        if (authKey.isDeleted()) {
+            throw new AuthenticationException(ErrorCode.INVALID_KEY);
+        }
+
+        if (authKey.isExpired()) {
+            throw new AuthenticationException(ErrorCode.API_KEY_EXPIRED);
+        }
+    }
+
     AuthKey getAuthKeyByHashKey(String hashKey) {
         log.info("[getAuthKeyByHashKey]");
 

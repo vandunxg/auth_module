@@ -11,4 +11,6 @@ public interface AuthKeyRepository extends JpaRepository<AuthKey, UUID> {
     boolean existsByUserId(UUID userId);
 
     Optional<AuthKey> findBySecretKeyHash(String secretKeyHash);
+
+    boolean existsByUserIdAndDeleted(UUID userId, boolean deleted);
 }

@@ -73,6 +73,9 @@ public class AuthKeyRequestFilter extends OncePerRequestFilter {
         }
 
         try {
+
+            authKeyService.isKeyActive(apiKey);
+
             String email = authKeyService.extractEmail(apiKey);
 
             UserDetails user = customUserDetailsService.loadUserByUsername(email);

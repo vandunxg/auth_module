@@ -76,4 +76,13 @@ public class UserController {
 
         return ResponseUtil.success(MessageConstant.SESSION_REVOKED);
     }
+
+    @PostMapping("/delete-key/{key}")
+    ResponseEntity<?> deleteKey(@PathVariable("key") String key) {
+        log.info("[POST] /auth/delete-key/{}", key);
+
+        userService.deleteAuthKey(key);
+
+        return ResponseUtil.success(MessageConstant.DELETE_SUCCESS);
+    }
 }

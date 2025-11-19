@@ -38,6 +38,7 @@ import com.auth.users.repository.entity.AuthKey;
 import com.auth.users.repository.entity.LoginHistory;
 import com.auth.users.repository.entity.User;
 import com.auth.users.repository.entity.UserSession;
+import com.auth.users.service.AuthKeyService;
 import com.auth.users.service.UserService;
 
 @Service
@@ -55,6 +56,7 @@ public class UserServiceImpl implements UserService {
     AuthKeyRepository authKeyRepository;
     UserSessionRepository userSessionRepository;
     LoginHistoryRepository loginHistoryRepository;
+    private final AuthKeyService authKeyService;
 
     @Override
     @Transactional
@@ -194,10 +196,17 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    @Override
+    public void deleteAuthKey(String key) {
+        log.info("[deleteAuthKey] key={}", key);
+
+        authKeyService.deleteAuthKey(key);
+    }
+
     void ensureUserJustOnlyOneKey(UUID userId) {
         log.info("[ensureUserJustOnlyOneKey] request={}", userId);
 
-        if (authKeyRepository.existsByUserId(userId)) {
+        if (authKeyRepository.existsByUserIdAndDeleted(userId, false)) {
             throw new AccessMaximumResourceException(ErrorCode.YOU_HAVE_KEY);
         }
     }
