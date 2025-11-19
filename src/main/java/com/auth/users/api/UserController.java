@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import com.auth.common.utils.MessageConstant;
 import com.auth.common.utils.ResponseUtil;
 import com.auth.users.api.request.ResetPasswordRequest;
-import com.auth.users.service.AuthService;
 import com.auth.users.service.UserService;
 
 @RestController

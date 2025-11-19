@@ -137,7 +137,7 @@ public class UserServiceImpl implements UserService {
 
         String key = UUID.randomUUID().toString();
 
-        AuthKey authKey = authKeyFactory.create(user.getId(), key);
+        AuthKey authKey = authKeyFactory.create(user.getId(), user.getEmail(), key);
 
         log.info("[generateAuthKey] save auth key to db");
         authKeyRepository.save(authKey);

@@ -31,6 +31,9 @@ public class AuthKey extends BaseEntity {
     UUID userId;
 
     @Column(nullable = false)
+    String email;
+
+    @Column(nullable = false)
     String secretKeyHash;
 
     Instant expiresAt;

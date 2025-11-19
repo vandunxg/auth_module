@@ -1,8 +1,5 @@
 package com.auth.common.configs;
 
-import static com.auth.common.enums.TokenType.ACCESS_TOKEN;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -23,25 +20,24 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth.common.response.ErrorResponse;
 import com.auth.common.utils.ErrorCode;
 import com.auth.common.utils.ResponseUtil;
-import com.auth.users.service.JwtService;
+import com.auth.users.service.AuthKeyService;
 import com.auth.users.service.impl.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @RequiredArgsConstructor
-@Slf4j(topic = "CUSTOMIZE-REQUEST-FILTER")
+@Slf4j(topic = "AUTH-KEY-REQUEST-FILTER")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class CustomizeRequestFilter extends OncePerRequestFilter {
+public class AuthKeyRequestFilter extends OncePerRequestFilter {
 
-    JwtService jwtService;
-    CustomUserDetailsService customUserDetailsService;
+    AuthKeyService authKeyService;
     ObjectMapper objectMapper;
+    CustomUserDetailsService customUserDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -49,46 +45,47 @@ public class CustomizeRequestFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
-        log.info("{} {}", request.getMethod(), request.getRequestURI());
 
-        String authHeader = request.getHeader(AUTHORIZATION);
+        log.info("[AUTH-KEY-FILTER] {} {}", request.getMethod(), request.getRequestURI());
 
-        if (StringUtils.hasLength(authHeader) && authHeader.startsWith("Bearer")) {
-            String token = authHeader.substring(7);
-            log.info("Token {}", token.substring(0, 10));
-            String email;
+        if (isRequestAuthenticated()) {
+            log.info("[REQUEST ALREADY AUTHENTICATED BY KEY]");
 
-            try {
-                email = jwtService.extractEmail(token, ACCESS_TOKEN);
-                log.info("email: {}", email);
-            } catch (Exception e) {
-                log.info(e.getMessage());
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                ResponseEntity<ErrorResponse> errorResponse =
-                        ResponseUtil.error(ErrorCode.TOKEN_EXPIRED);
+        String apiKey = request.getHeader("x-api-key");
+        if (apiKey == null || apiKey.isBlank()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                String jsonResponse = objectMapper.writeValueAsString(errorResponse);
-
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.getWriter().write(jsonResponse);
-                return;
-            }
+        try {
+            String email = authKeyService.extractEmail(apiKey);
 
             UserDetails user = customUserDetailsService.loadUserByUsername(email);
 
-            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-            UsernamePasswordAuthenticationToken authToken =
+            UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-            authToken.setDetails(new WebAuthenticationDetails(request));
-            securityContext.setAuthentication(authToken);
-            SecurityContextHolder.setContext(securityContext);
 
-            filterChain.doFilter(request, response);
-        } else {
-            log.warn("Request not contain token");
+            auth.setDetails(new WebAuthenticationDetails(request));
 
-            filterChain.doFilter(request, response);
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(auth);
+            SecurityContextHolder.setContext(context);
+
+            log.info("[AUTH-KEY-FILTER] AUTHENTICATED BY API-KEY: {}", email);
+
+        } catch (Exception ex) {
+            log.error("[AUTH-KEY-FILTER] INVALID KEY: {}", ex.getMessage());
+            ResponseEntity<ErrorResponse> error = ResponseUtil.error(ErrorCode.INVALID_KEY);
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write(objectMapper.writeValueAsString(error));
+            return;
         }
+
+        filterChain.doFilter(request, response);
     }
 
     Boolean isRequestAuthenticated() {

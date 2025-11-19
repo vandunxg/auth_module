@@ -28,6 +28,7 @@ public class WebSecurityConfig {
 
     CustomizeRequestFilter customizeRequestFilter;
     AuthenticationProvider authenticationProvider;
+    AuthKeyRequestFilter authKeyRequestFilter;
 
     String[] PUBLIC_ENDPOINT = {"/auth/**"};
 
@@ -46,6 +47,7 @@ public class WebSecurityConfig {
                                     .authenticated();
                         })
                 .authenticationProvider(authenticationProvider)
+                .addFilterBefore(authKeyRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(
                         customizeRequestFilter, UsernamePasswordAuthenticationFilter.class);
 

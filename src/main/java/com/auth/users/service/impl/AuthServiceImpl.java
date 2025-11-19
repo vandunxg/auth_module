@@ -69,6 +69,9 @@ public class AuthServiceImpl implements AuthService {
     public TokenResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         log.info("[login] request={}", request);
 
+        boolean isSuccess = true;
+        UUID userId = null;
+
         try {
             Authentication authentication =
                     authenticationManager.authenticate(
@@ -79,22 +82,12 @@ public class AuthServiceImpl implements AuthService {
 
             UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
             User user = principal.getUser();
+            userId = user.getId();
 
             ensureUserActive(user);
 
             TokenResponse tokenResponse = jwtService.issueToken(principal);
             String refreshTokenHash = tokenHasher.hash(tokenResponse.refreshToken());
-
-            // login with a credentials => identifier set by credentials
-            log.info("[login] publish UserLogonEvent when login successfully");
-            eventPublisher.publishEvent(
-                    new UserLogonEvent(
-                            user.getId(),
-                            user.getEmail(),
-                            request.platform(),
-                            request.deviceId(),
-                            getClientIp(httpRequest),
-                            LoginStatus.SUCCESS));
 
             log.info("[login] publish UserSessionEvent when login successfully");
             eventPublisher.publishEvent(
@@ -109,17 +102,19 @@ public class AuthServiceImpl implements AuthService {
         } catch (AuthenticationException ex) {
             log.warn("[login] Failed email={}, reason={}", request.email(), ex.getMessage());
 
-            log.info("[login] publish UserLogonEvent when login fail");
+            isSuccess = false;
+
+            throw new com.auth.common.error.AuthenticationException(ErrorCode.INVALID_CREDENTIALS);
+        } finally {
+            log.info("[login] publish UserLogonEvent when after login");
             eventPublisher.publishEvent(
                     new UserLogonEvent(
-                            null,
+                            userId,
                             request.email(),
                             request.platform(),
                             request.deviceId(),
                             getClientIp(httpRequest),
-                            LoginStatus.FAILED));
-
-            throw new com.auth.common.error.AuthenticationException(ErrorCode.INVALID_CREDENTIALS);
+                            isSuccess ? LoginStatus.SUCCESS : LoginStatus.FAILED));
         }
     }
 
@@ -127,25 +122,18 @@ public class AuthServiceImpl implements AuthService {
     public TokenResponse loginWithKey(LoginWithKeyRequest request, HttpServletRequest httpRequest) {
         log.info("[loginWithKey]={}", request);
 
+        boolean isSuccess = true;
+        UUID userId = null;
+
         try {
             String key = request.key();
             AuthKey authKey = getAuthKeyByHashKey(tokenHasher.hash(key));
             User user = getUserById(authKey.getUserId());
             UserPrincipal principal =
                     (UserPrincipal) customUserDetailsService.loadUserByUsername(user.getEmail());
+            userId = user.getId();
 
             TokenResponse tokenResponse = jwtService.issueToken(principal);
-
-            // login with a key => identifier set by key
-            log.info("[loginWithKey] publish UserLogonEvent when login successfully");
-            eventPublisher.publishEvent(
-                    new UserLogonEvent(
-                            user.getId(),
-                            request.key(),
-                            request.platform(),
-                            request.deviceId(),
-                            getClientIp(httpRequest),
-                            LoginStatus.SUCCESS));
 
             log.info("[loginWithKey] publish UserSessionEvent when login successfully");
             eventPublisher.publishEvent(
@@ -158,17 +146,22 @@ public class AuthServiceImpl implements AuthService {
 
             return tokenResponse;
         } catch (AuthenticationException ex) {
-            log.info("[loginWithKey] publish UserLogonEvent when login fail");
+            log.info("[loginWithKey]={}", ex.getMessage());
+
+            isSuccess = false;
+
+            throw new com.auth.common.error.AuthenticationException(ErrorCode.INVALID_KEY);
+        } finally {
+            log.info("[loginWithKey] publish UserLogonEvent after login with key");
+
             eventPublisher.publishEvent(
                     new UserLogonEvent(
-                            null,
+                            userId,
                             request.key(),
                             request.platform(),
                             request.deviceId(),
                             getClientIp(httpRequest),
-                            LoginStatus.FAILED));
-
-            throw new com.auth.common.error.AuthenticationException(ErrorCode.INVALID_KEY);
+                            isSuccess ? LoginStatus.SUCCESS : LoginStatus.FAILED));
         }
     }
 
@@ -190,12 +183,11 @@ public class AuthServiceImpl implements AuthService {
         log.info("[refreshToken] request={}]", request.getPathInfo());
 
         String refreshToken = getRefreshTokenFromRequest(request);
-        UserPrincipal principal = getUserPrincipal();
 
         ensureRefreshTokenNotInvoke(refreshToken);
         ensureRefreshTokenNotExpiry(refreshToken);
 
-        return new TokenResponse(jwtService.generateAccessToken(principal), refreshToken);
+        return new TokenResponse(jwtService.refreshToken(refreshToken), refreshToken);
     }
 
     @Override

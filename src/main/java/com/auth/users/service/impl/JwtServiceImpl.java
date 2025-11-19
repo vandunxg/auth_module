@@ -17,12 +17,15 @@ import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.auth.common.configs.UserPrincipal;
 import com.auth.common.enums.TokenType;
+import com.auth.common.error.AuthenticationException;
+import com.auth.common.utils.ErrorCode;
 import com.auth.users.api.response.TokenResponse;
+import com.auth.users.repository.UserRepository;
 import com.auth.users.repository.entity.User;
 import com.auth.users.service.JwtService;
 
@@ -47,6 +50,33 @@ public class JwtServiceImpl implements JwtService {
     @NonFinal
     @Value("${jwt.expiration.refresh-token}")
     Long REFRESH_EXPIRY;
+
+    UserRepository userRepository;
+    CustomUserDetailsService customUserDetailsService;
+
+    @Override
+    public String refreshToken(String refreshToken) {
+        log.info("[refreshToken] start token={}", refreshToken.substring(0, 10));
+
+        if (!StringUtils.hasText(refreshToken)) {
+            log.warn("refresh token blank");
+            throw new AuthenticationException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+
+        try {
+            String email = extractEmail(refreshToken, TokenType.REFRESH_TOKEN);
+            User user = findUserByEmail(email);
+
+            UserPrincipal userPrincipal =
+                    (UserPrincipal) customUserDetailsService.loadUserByUsername(email);
+
+            return generateRefreshToken(userPrincipal);
+        } catch (Exception ex) {
+            log.info("[refreshToken] exception: {}", ex.getMessage());
+
+            throw new AuthenticationException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+    }
 
     @Override
     public String generateAccessToken(UserPrincipal principal) {
@@ -75,14 +105,6 @@ public class JwtServiceImpl implements JwtService {
         return createToken(claims, user.getEmail(), TokenType.REFRESH_TOKEN);
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails, TokenType tokenType) {
-        log.info("[validateToken]");
-
-        final String email = extractEmail(token, tokenType);
-
-        return (email.equals(userDetails.getUsername()) && !isTokenExpired(token, tokenType));
-    }
-
     @Override
     public TokenResponse issueToken(UserPrincipal user) {
         return new TokenResponse(generateAccessToken(user), generateRefreshToken(user));
@@ -104,6 +126,14 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String extractEmail(String token, TokenType type) {
         return extractClaim(token, type, Claims::getSubject);
+    }
+
+    User findUserByEmail(String email) {
+        log.info("[findUserByEmail] email={}", email);
+
+        return userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new AuthenticationException(ErrorCode.USER_NOT_FOUND));
     }
 
     Long getExpiry(TokenType type) {

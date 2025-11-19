@@ -25,9 +25,10 @@ public class AuthKeyFactory {
 
     TokenHasher tokenHasher;
 
-    public AuthKey create(UUID userId, String rawKey) {
+    public AuthKey create(UUID userId, String email, String rawKey) {
         return AuthKey.builder()
                 .userId(userId)
+                .email(email)
                 .secretKeyHash(tokenHasher.hash(rawKey))
                 .expiresAt(Instant.now().plusMillis(AUTH_SECRET_EXPIRY_TIME))
                 .build();

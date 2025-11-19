@@ -26,6 +26,8 @@ public enum ErrorCode {
             "Token already used", "RESET_TOKEN_ALREADY_USED", HttpStatus.UNAUTHORIZED),
     CONFIRM_PASSWORD_NOT_MATCH(
             "Password does not match", "CONFIRM_PASSWORD_NOT_MATCH", HttpStatus.UNAUTHORIZED),
+    INVALID_REFRESH_TOKEN(
+            "Invalid refresh token", "INVALID_REFRESH_TOKEN", HttpStatus.UNAUTHORIZED),
     // ===== USER =====
     USER_NOT_FOUND("User not found", "USER_NOT_FOUND", HttpStatus.NOT_FOUND),
     EMAIL_EXISTS("Email already exists", "EMAIL_EXISTS", HttpStatus.BAD_REQUEST),
