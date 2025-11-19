@@ -19,11 +19,10 @@ import com.auth.users.repository.entity.AuthKey;
 @RequiredArgsConstructor
 public class AuthKeyFactory {
 
+    TokenHasher tokenHasher;
     @NonFinal
     @Value("${spring.application.auth-key-expiry-minutes}")
     long AUTH_SECRET_EXPIRY_TIME;
-
-    TokenHasher tokenHasher;
 
     public AuthKey create(UUID userId, String email, String rawKey) {
         return AuthKey.builder()
