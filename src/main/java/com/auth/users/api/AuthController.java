@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.AccessDeniedException;
+import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import com.auth.common.utils.MessageConstant;
 import com.auth.common.utils.ResponseUtil;
 import com.auth.users.api.request.*;
+import com.auth.users.api.response.RegisterResponse;
 import com.auth.users.service.AuthService;
 
 @RestController
@@ -91,5 +93,11 @@ public class AuthController {
         authService.resetPassword(request);
 
         return ResponseUtil.success(MessageConstant.UPDATE_SUCCESS);
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<?> test() {
+
+        return ResponseUtil.success(new RegisterResponse(UUID.randomUUID()));
     }
 }
