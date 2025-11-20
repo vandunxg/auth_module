@@ -53,7 +53,8 @@ public class ApplicationStartupRunner implements CommandLineRunner {
                         "admin@admin.com",
                         passwordEncoder.encode("Admin@123"),
                         null,
-                        UserStatus.ACTIVE);
+                        UserStatus.ACTIVE,
+                        "");
 
         userRepository.save(user);
         log.warn("[createAdmin] Admin account created");

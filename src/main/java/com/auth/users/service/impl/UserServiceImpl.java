@@ -13,19 +13,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.auth.common.configs.UserPrincipal;
 import com.auth.common.enums.SessionStatus;
 import com.auth.common.error.AccessMaximumResourceException;
 import com.auth.common.error.UserValidationException;
 import com.auth.common.utils.ErrorCode;
-import com.auth.common.utils.TokenHasher;
+import com.auth.files.api.adapter.FileServiceAdapter;
 import com.auth.users.api.request.RegisterRequest;
 import com.auth.users.api.request.ResetPasswordRequest;
-import com.auth.users.api.response.AuthKeyResponse;
-import com.auth.users.api.response.LoginHistoryResponse;
-import com.auth.users.api.response.SessionResponse;
-import com.auth.users.api.response.UserResponse;
+import com.auth.users.api.response.*;
 import com.auth.users.event.UserCreatedEvent;
 import com.auth.users.event.UserRevokeSessionEvent;
 import com.auth.users.factory.AuthKeyFactory;
@@ -52,11 +50,11 @@ public class UserServiceImpl implements UserService {
     AuthKeyFactory authKeyFactory;
     ApplicationEventPublisher eventPublisher;
     PasswordEncoder passwordEncoder;
-    TokenHasher tokenHasher;
     AuthKeyRepository authKeyRepository;
     UserSessionRepository userSessionRepository;
     LoginHistoryRepository loginHistoryRepository;
-    private final AuthKeyService authKeyService;
+    AuthKeyService authKeyService;
+    FileServiceAdapter fileServiceAdapter;
 
     @Override
     @Transactional
@@ -83,7 +81,11 @@ public class UserServiceImpl implements UserService {
         User user = principal.getUser();
 
         return new UserResponse(
-                user.getId(), user.getFullName(), user.getEmail(), user.getPhoneNumber());
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getAvatar());
     }
 
     @Override
@@ -99,7 +101,8 @@ public class UserServiceImpl implements UserService {
                                         x.getId(),
                                         x.getFullName(),
                                         x.getEmail(),
-                                        x.getPhoneNumber()))
+                                        x.getPhoneNumber(),
+                                        x.getAvatar()))
                 .toList();
     }
 
@@ -201,6 +204,21 @@ public class UserServiceImpl implements UserService {
         log.info("[deleteAuthKey] key={}", key);
 
         authKeyService.deleteAuthKey(key);
+    }
+
+    @Override
+    public FileResponse uploadAvatar(MultipartFile avatar) {
+        log.info("[uploadAvatar] avatar={}", avatar.getName());
+
+        UserPrincipal principal = getCurrentUserPrincipal();
+        User user = principal.getUser();
+
+        FileResponse fileResponse = fileServiceAdapter.uploadFile(avatar);
+        user.setAvatar(fileResponse.fileUrl());
+
+        userRepository.save(user);
+
+        return fileResponse;
     }
 
     void ensureUserJustOnlyOneKey(UUID userId) {

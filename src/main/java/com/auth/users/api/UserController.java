@@ -5,9 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.auth.common.utils.MessageConstant;
 import com.auth.common.utils.ResponseUtil;
@@ -84,5 +86,12 @@ public class UserController {
         userService.deleteAuthKey(key);
 
         return ResponseUtil.success(MessageConstant.DELETE_SUCCESS);
+    }
+
+    @PostMapping(value = "/upload-avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
+
+        return ResponseUtil.success(
+                MessageConstant.OPERATION_SUCCESS, userService.uploadAvatar(file));
     }
 }

@@ -36,4 +36,6 @@ public class User extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     UserStatus status;
+
+    String avatar;
 }
