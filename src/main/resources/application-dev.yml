@@ -45,7 +45,7 @@ cloudflare:
   r2:
     accountId:
     accessKeyId:
-    secretAccessKey: 
+    secretAccessKey:
     bucket: authdemo
     publicUrl: https://pub-0fdfb3d65e2b40e9a2f1cad018e15d39.r2.dev
     region: auto

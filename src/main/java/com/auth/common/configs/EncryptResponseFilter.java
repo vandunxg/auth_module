@@ -18,10 +18,7 @@ import com.auth.common.utils.AESEncryptionUtil;
 @Component
 public class EncryptResponseFilter extends OncePerRequestFilter {
 
-    List<String> IS_ENCRYPTED_ENDPOINT = List.of(
-            "/users/me",
-            "/auth/login-with-key"
-    );
+    List<String> IS_ENCRYPTED_ENDPOINT = List.of("/users/me", "/auth/login-with-key");
 
     private final AESEncryptionUtil encryptionUtil;
 
@@ -37,12 +34,14 @@ public class EncryptResponseFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String urlPath = request.getRequestURI();
-        boolean isUrlIncludeEncryptedEndpoint = IS_ENCRYPTED_ENDPOINT.stream().anyMatch(urlPath::equals);
+        boolean isUrlIncludeEncryptedEndpoint =
+                IS_ENCRYPTED_ENDPOINT.stream().anyMatch(urlPath::equals);
 
-        if(!isUrlIncludeEncryptedEndpoint) {
+        if (!isUrlIncludeEncryptedEndpoint) {
             filterChain.doFilter(request, response);
         } else {
-            CachedBodyHttpServletResponse wrappedResponse = new CachedBodyHttpServletResponse(response);
+            CachedBodyHttpServletResponse wrappedResponse =
+                    new CachedBodyHttpServletResponse(response);
 
             filterChain.doFilter(request, wrappedResponse);
 

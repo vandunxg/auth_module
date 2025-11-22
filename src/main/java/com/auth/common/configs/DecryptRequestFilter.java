@@ -23,10 +23,7 @@ public class DecryptRequestFilter extends OncePerRequestFilter {
 
     AESEncryptionUtil encryptionUtil;
 
-    List<String> IS_ENCRYPTED_ENDPOINT = List.of(
-            "/users/me",
-            "/auth/login-with-key"
-            );
+    List<String> IS_ENCRYPTED_ENDPOINT = List.of("/users/me", "/auth/login-with-key");
 
     public DecryptRequestFilter(AESEncryptionUtil encryptionUtil) {
         this.encryptionUtil = encryptionUtil;
@@ -41,9 +38,10 @@ public class DecryptRequestFilter extends OncePerRequestFilter {
 
         String urlPath = request.getRequestURI();
 
-        boolean isUrlIncludeEncryptedEndpoint = IS_ENCRYPTED_ENDPOINT.stream().anyMatch(urlPath::equals);
+        boolean isUrlIncludeEncryptedEndpoint =
+                IS_ENCRYPTED_ENDPOINT.stream().anyMatch(urlPath::equals);
 
-        if(isUrlIncludeEncryptedEndpoint) {
+        if (isUrlIncludeEncryptedEndpoint) {
             CachedBodyHttpServletRequest wrappedRequest = new CachedBodyHttpServletRequest(request);
             String encryptedBody = new String(wrappedRequest.getInputStream().readAllBytes());
 
