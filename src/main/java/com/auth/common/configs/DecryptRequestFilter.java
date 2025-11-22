@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
 import java.io.IOException;
+import java.util.List;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,6 +23,11 @@ public class DecryptRequestFilter extends OncePerRequestFilter {
 
     AESEncryptionUtil encryptionUtil;
 
+    List<String> IS_ENCRYPTED_ENDPOINT = List.of(
+            "/users/me",
+            "/auth/login-with-key"
+            );
+
     public DecryptRequestFilter(AESEncryptionUtil encryptionUtil) {
         this.encryptionUtil = encryptionUtil;
     }
@@ -33,19 +39,27 @@ public class DecryptRequestFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        CachedBodyHttpServletRequest wrappedRequest = new CachedBodyHttpServletRequest(request);
-        String encryptedBody = new String(wrappedRequest.getInputStream().readAllBytes());
+        String urlPath = request.getRequestURI();
 
-        if (!encryptedBody.isBlank()) {
-            String decrypted = encryptionUtil.decrypt(encryptedBody);
+        boolean isUrlIncludeEncryptedEndpoint = IS_ENCRYPTED_ENDPOINT.stream().anyMatch(urlPath::equals);
 
-            HttpServletRequest decryptedRequest =
-                    new CachedBodyHttpServletRequest(
-                            new CustomRequestWrapper(wrappedRequest, decrypted));
+        if(isUrlIncludeEncryptedEndpoint) {
+            CachedBodyHttpServletRequest wrappedRequest = new CachedBodyHttpServletRequest(request);
+            String encryptedBody = new String(wrappedRequest.getInputStream().readAllBytes());
 
-            filterChain.doFilter(decryptedRequest, response);
+            if (!encryptedBody.isBlank()) {
+                String decrypted = encryptionUtil.decrypt(encryptedBody);
+
+                HttpServletRequest decryptedRequest =
+                        new CachedBodyHttpServletRequest(
+                                new CustomRequestWrapper(wrappedRequest, decrypted));
+
+                filterChain.doFilter(decryptedRequest, response);
+            } else {
+                filterChain.doFilter(wrappedRequest, response);
+            }
         } else {
-            filterChain.doFilter(wrappedRequest, response);
+            filterChain.doFilter(request, response);
         }
     }
 }

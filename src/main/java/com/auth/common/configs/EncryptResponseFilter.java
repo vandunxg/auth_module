@@ -3,6 +3,7 @@ package com.auth.common.configs;
 import lombok.NonNull;
 
 import java.io.IOException;
+import java.util.List;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -17,6 +18,11 @@ import com.auth.common.utils.AESEncryptionUtil;
 @Component
 public class EncryptResponseFilter extends OncePerRequestFilter {
 
+    List<String> IS_ENCRYPTED_ENDPOINT = List.of(
+            "/users/me",
+            "/auth/login-with-key"
+    );
+
     private final AESEncryptionUtil encryptionUtil;
 
     public EncryptResponseFilter(AESEncryptionUtil encryptionUtil) {
@@ -30,13 +36,20 @@ public class EncryptResponseFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        CachedBodyHttpServletResponse wrappedResponse = new CachedBodyHttpServletResponse(response);
+        String urlPath = request.getRequestURI();
+        boolean isUrlIncludeEncryptedEndpoint = IS_ENCRYPTED_ENDPOINT.stream().anyMatch(urlPath::equals);
 
-        filterChain.doFilter(request, wrappedResponse);
+        if(!isUrlIncludeEncryptedEndpoint) {
+            filterChain.doFilter(request, response);
+        } else {
+            CachedBodyHttpServletResponse wrappedResponse = new CachedBodyHttpServletResponse(response);
 
-        byte[] responseBody = wrappedResponse.getBody();
-        String encrypted = encryptionUtil.encrypt(new String(responseBody));
+            filterChain.doFilter(request, wrappedResponse);
 
-        wrappedResponse.writeEncrypted(encrypted.getBytes());
+            byte[] responseBody = wrappedResponse.getBody();
+            String encrypted = encryptionUtil.encrypt(new String(responseBody));
+
+            wrappedResponse.writeEncrypted(encrypted.getBytes());
+        }
     }
 }
