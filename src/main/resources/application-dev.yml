@@ -26,6 +26,8 @@ spring:
     auth-key-expiry-minutes: 15
     verification:
       expiry-minutes: 15
+  encrypt-key: A9fG3kP7sQ1mZ4tB
+
   sendgrid:
     api-key: YUMMY_TOKEN
     register-template: YUMMY_TOKEN
@@ -41,9 +43,9 @@ jwt:
     refresh-token: 2592000000 #30 days = 30 * 24 * 60 * 60 * 1000
 cloudflare:
   r2:
-    accountId: 72d7e6804c800173e209a2b14c2893a1
-    accessKeyId: b74d20bdfccfba2bcabdc48948843fda
-    secretAccessKey: 02f1174cf24c85af1aef7fff190f93c8cd92b0a9dceda2aa373b330f3a7a3134
+    accountId:
+    accessKeyId:
+    secretAccessKey:
     bucket: authdemo
     publicUrl: https://pub-0fdfb3d65e2b40e9a2f1cad018e15d39.r2.dev
     region: auto

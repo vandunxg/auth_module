@@ -31,7 +31,7 @@ import com.auth.users.service.UserSessionService;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserSessionServiceImpl implements UserSessionService {
 
-    long SESSION_EXPIRE_DAYS = 30;
+    static long SESSION_EXPIRE_DAYS = 30;
 
     UserSessionRepository userSessionRepository;
     RedisUserSessionService redisUserSessionService;
